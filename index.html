@@ -29,6 +29,12 @@
     }).addTo(map);
 
     var capasEspecies = {};
+    var coloresEspecies = {}; // Guardará un color para cada especie
+
+    // Función para generar un color aleatorio
+    function colorAleatorio() {
+      return "#" + Math.floor(Math.random()*16777215).toString(16);
+    }
 
     // Leer CSV
     Papa.parse("cetaceos.csv", {
@@ -41,10 +47,8 @@
           return;
         }
 
-        // Detectar nombres de columnas (ignorando mayúsculas y espacios)
+        // Detectar nombres de columnas
         let headers = Object.keys(results.data[0]);
-        console.log("Cabeceras detectadas:", headers);
-
         let colSpecies = headers.find(h => h.toLowerCase().includes("species"));
         let colLat = headers.find(h => h.toLowerCase().includes("lat"));
         let colLon = headers.find(h => h.toLowerCase().includes("lon"));
@@ -63,7 +67,18 @@
           let year = colYear ? row[colYear] : "N/A";
 
           if (!isNaN(lat) && !isNaN(lon) && especie) {
-            let marker = L.marker([lat, lon]).bindPopup(`<b>${especie}</b><br>Año: ${year}`);
+            // Asignar color si no tiene
+            if (!coloresEspecies[especie]) {
+              coloresEspecies[especie] = colorAleatorio();
+            }
+
+            let marker = L.circleMarker([lat, lon], {
+              radius: 6,
+              color: coloresEspecies[especie],
+              fillColor: coloresEspecies[especie],
+              fillOpacity: 0.7
+            }).bindPopup(`<b>${especie}</b><br>Año: ${year}`);
+
             if (!capasEspecies[especie]) {
               capasEspecies[especie] = L.layerGroup();
             }
@@ -73,8 +88,6 @@
 
         // Añadir control de capas
         L.control.layers(null, capasEspecies, {collapsed:false}).addTo(map);
-
-        console.log("Capas creadas:", Object.keys(capasEspecies));
       }
     });
   </script>
