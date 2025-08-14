@@ -35,6 +35,7 @@
       download: true,
       header: true,
       complete: function(results) {
+        console.log(results.data); 
         results.data.forEach(function(row) {
           if (row.decimalLatitude && row.decimalLongitude && row.species) {
             let especie = row.species.trim();
