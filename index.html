@@ -20,7 +20,6 @@
   <div id="map"></div>
 
   <script>
-    // Crear mapa
     var map = L.map('map').setView([40, -4], 5);
 
     // Capa base
@@ -29,14 +28,14 @@
     }).addTo(map);
 
     var capasEspecies = {};
-    var coloresEspecies = {}; // Guardará un color para cada especie
+    var coloresEspecies = {};
 
-    // Función para generar un color aleatorio
+    // Generar color aleatorio en formato #RRGGBB
     function colorAleatorio() {
-      return "#" + Math.floor(Math.random()*16777215).toString(16);
+      let color = "#" + Math.floor(Math.random() * 16777215).toString(16);
+      return color.padEnd(7, '0'); // asegura longitud 7 (# + 6 dígitos)
     }
 
-    // Leer CSV
     Papa.parse("cetaceos.csv", {
       download: true,
       header: true,
@@ -47,7 +46,6 @@
           return;
         }
 
-        // Detectar nombres de columnas
         let headers = Object.keys(results.data[0]);
         let colSpecies = headers.find(h => h.toLowerCase().includes("species"));
         let colLat = headers.find(h => h.toLowerCase().includes("lat"));
@@ -59,7 +57,6 @@
           return;
         }
 
-        // Procesar datos
         results.data.forEach(function(row) {
           let especie = row[colSpecies];
           let lat = parseFloat(row[colLat]);
@@ -67,16 +64,18 @@
           let year = colYear ? row[colYear] : "N/A";
 
           if (!isNaN(lat) && !isNaN(lon) && especie) {
-            // Asignar color si no tiene
             if (!coloresEspecies[especie]) {
               coloresEspecies[especie] = colorAleatorio();
             }
 
+            let color = coloresEspecies[especie];
+
             let marker = L.circleMarker([lat, lon], {
               radius: 6,
-              color: coloresEspecies[especie],
-              fillColor: coloresEspecies[especie],
-              fillOpacity: 0.7
+              color: color,         // borde
+              weight: 2,            // grosor borde
+              fillColor: color,     // relleno
+              fillOpacity: 0.8
             }).bindPopup(`<b>${especie}</b><br>Año: ${year}`);
 
             if (!capasEspecies[especie]) {
@@ -86,8 +85,8 @@
           }
         });
 
-        // Añadir control de capas
         L.control.layers(null, capasEspecies, {collapsed:false}).addTo(map);
+        console.log("Colores asignados:", coloresEspecies);
       }
     });
   </script>
