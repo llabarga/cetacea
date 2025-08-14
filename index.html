@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <!-- PapaParse para CSV -->
+  <!-- PapaParse -->
   <script src="https://unpkg.com/papaparse@5.3.2/papaparse.min.js"></script>
 
   <style>
@@ -34,14 +34,36 @@
     Papa.parse("cetaceos.csv", {
       download: true,
       header: true,
+      dynamicTyping: true,
       complete: function(results) {
-        console.log(results.data); 
+        if (results.data.length === 0) {
+          console.error("El CSV está vacío o no se pudo leer.");
+          return;
+        }
+
+        // Detectar nombres de columnas (ignorando mayúsculas y espacios)
+        let headers = Object.keys(results.data[0]);
+        console.log("Cabeceras detectadas:", headers);
+
+        let colSpecies = headers.find(h => h.toLowerCase().includes("species"));
+        let colLat = headers.find(h => h.toLowerCase().includes("lat"));
+        let colLon = headers.find(h => h.toLowerCase().includes("lon"));
+        let colYear = headers.find(h => h.toLowerCase().includes("year"));
+
+        if (!colSpecies || !colLat || !colLon) {
+          console.error("No se encontraron columnas de especie, latitud o longitud en el CSV.");
+          return;
+        }
+
+        // Procesar datos
         results.data.forEach(function(row) {
-          if (row.decimalLatitude && row.decimalLongitude && row.species) {
-            let especie = row.species.trim();
-            let marker = L.marker([parseFloat(row.decimalLatitude), parseFloat(row.decimalLongitude)])
-              .bindPopup(`<b>${especie}</b><br>Año: ${row.year || 'N/A'}`);
-            
+          let especie = row[colSpecies];
+          let lat = parseFloat(row[colLat]);
+          let lon = parseFloat(row[colLon]);
+          let year = colYear ? row[colYear] : "N/A";
+
+          if (!isNaN(lat) && !isNaN(lon) && especie) {
+            let marker = L.marker([lat, lon]).bindPopup(`<b>${especie}</b><br>Año: ${year}`);
             if (!capasEspecies[especie]) {
               capasEspecies[especie] = L.layerGroup();
             }
@@ -51,6 +73,8 @@
 
         // Añadir control de capas
         L.control.layers(null, capasEspecies, {collapsed:false}).addTo(map);
+
+        console.log("Capas creadas:", Object.keys(capasEspecies));
       }
     });
   </script>
