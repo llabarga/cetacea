@@ -14,9 +14,19 @@
 
   <style>
     #map { height: 100vh; }
+    .info.legend {
+  background: white;
+  padding: 8px;
+  font-size: 14px;
+  line-height: 18px;
+  color: #333;
+  border-radius: 5px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.2);
+}
   </style>
 </head>
 <body>
+  <h1 style="text-align:center; font-family:sans-serif;">Mapa de distribución de cetáceos</h1>
   <div id="map"></div>
 
   <script>
@@ -86,6 +96,24 @@
         });
 
         L.control.layers(null, capasEspecies, {collapsed:false}).addTo(map);
+        
+// Leyenda
+var leyenda = L.control({position: 'bottomright'});
+
+leyenda.onAdd = function(map) {
+  var div = L.DomUtil.create('div', 'info legend');
+  div.innerHTML += "<h4>Especies</h4>";
+  
+  for (let especie in coloresEspecies) {
+    div.innerHTML +=
+      '<i style="background:' + coloresEspecies[especie] + '; width: 12px; height: 12px; display:inline-block; margin-right:5px;"></i>' +
+      especie + '<br>';
+  }
+  
+  return div;
+};
+
+leyenda.addTo(map);
         console.log("Colores asignados:", coloresEspecies);
       }
     });
