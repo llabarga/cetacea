@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Mapa de cetáceos</title>
+  <title>Mapa de distribución de cetáceos</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- Leaflet CSS -->
@@ -13,26 +13,42 @@
   <script src="https://unpkg.com/papaparse@5.3.2/papaparse.min.js"></script>
 
   <style>
-    #map { height: 100vh; }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: sans-serif;
+    }
+
+    h1 {
+      text-align: center;
+      margin: 10px 0;
+    }
+
+    #map {
+      height: 90vh;
+      width: 100%;
+    }
+
     .info.legend {
-  background: white;
-  padding: 8px;
-  font-size: 14px;
-  line-height: 18px;
-  color: #333;
-  border-radius: 5px;
-  box-shadow: 0 0 15px rgba(0,0,0,0.2);
-}
+      background: white;
+      padding: 8px;
+      font-size: 14px;
+      line-height: 18px;
+      color: #333;
+      border-radius: 5px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    }
   </style>
 </head>
 <body>
-  <h1 style="text-align:center; font-family:sans-serif;">Mapa de distribución de cetáceos</h1>
+  <h1>Mapa de distribución de cetáceos</h1>
   <div id="map"></div>
 
   <script>
+    // Inicializar mapa
     var map = L.map('map').setView([40, -4], 5);
 
-    // Capa base
+    // Capa base de OpenStreetMap
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap'
     }).addTo(map);
@@ -43,7 +59,7 @@
     // Generar color aleatorio en formato #RRGGBB
     function colorAleatorio() {
       let color = "#" + Math.floor(Math.random() * 16777215).toString(16);
-      return color.padEnd(7, '0'); // asegura longitud 7 (# + 6 dígitos)
+      return color.padEnd(7, '0');
     }
 
     Papa.parse("cetaceos.csv", {
@@ -82,9 +98,9 @@
 
             let marker = L.circleMarker([lat, lon], {
               radius: 6,
-              color: color,         // borde
-              weight: 2,            // grosor borde
-              fillColor: color,     // relleno
+              color: color,        // borde
+              weight: 2,
+              fillColor: color,    // relleno
               fillOpacity: 0.8
             }).bindPopup(`<b>${especie}</b><br>Año: ${year}`);
 
@@ -95,26 +111,26 @@
           }
         });
 
+        // Control para activar/desactivar especies
         L.control.layers(null, capasEspecies, {collapsed:false}).addTo(map);
-        
-// Leyenda
-var leyenda = L.control({position: 'bottomright'});
 
-leyenda.onAdd = function(map) {
-  var div = L.DomUtil.create('div', 'info legend');
-  div.innerHTML += "<h4>Especies</h4>";
-  
-  for (let especie in coloresEspecies) {
-    div.innerHTML +=
-      '<i style="background:' + coloresEspecies[especie] + '; width: 12px; height: 12px; display:inline-block; margin-right:5px;"></i>' +
-      especie + '<br>';
-  }
-  
-  return div;
-};
+        // ✅ Leyenda
+        var leyenda = L.control({position: 'bottomright'});
 
-leyenda.addTo(map);
-        console.log("Colores asignados:", coloresEspecies);
+        leyenda.onAdd = function(map) {
+          var div = L.DomUtil.create('div', 'info legend');
+          div.innerHTML += "<h4>Especies</h4>";
+          
+          for (let especie in coloresEspecies) {
+            div.innerHTML +=
+              '<i style="background:' + coloresEspecies[especie] + '; width: 12px; height: 12px; display:inline-block; margin-right:5px;"></i>' +
+              especie + '<br>';
+          }
+          
+          return div;
+        };
+
+        leyenda.addTo(map);
       }
     });
   </script>
